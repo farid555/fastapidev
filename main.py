@@ -53,8 +53,6 @@ def create_post(new_post: Post):
 def get_post(id: int, response: Response):
     post = find_post(id)
     if not post:
-        # response.status_code = status.HTTP_404_NOT_FOUND
-        # return {'message': f"post with id:{id} was not found"}
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
                             detail=f"post with id: {id} was not found")
     return {'test': post}
@@ -62,9 +60,10 @@ def get_post(id: int, response: Response):
 
 @app.delete("/posts/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_post(id: int):
-    # deleting post
-    # find the index in the array that has required ID
-    # my_posts.pop(index)
+    
     index = finde_index_post(id)
+    if index == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"post with id: {id} was not found")
     my_posts.pop(index)
-    return {'message': 'post was succesfully deleted'}
+    return Response(tatus_code=status.HTTP_204_NO_CONTENT)
