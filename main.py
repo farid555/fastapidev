@@ -1,7 +1,8 @@
 from typing import Optional
-from fastapi import Body, FastAPI
+from fastapi import FastAPI, Response, status
 from pydantic import BaseModel
 # pydantic Create class Model [https://docs.pydantic.dev/latest/concepts/models/]
+from random import randrange
 
 
 app = FastAPI()
@@ -14,6 +15,16 @@ class Post(BaseModel):
     rating: Optional[int] = None
 
 
+my_posts = [{"title": "Hello there!", "content": "This my third time", "id": 1}, {
+    "title": "Hello there", "content": "This my third time", "id": 2}]
+
+
+def find_post(id):
+    for p in my_posts:
+        if p["id"] == id:
+            return p
+
+
 @app.get("/")
 def root():
     return {"message": "Hello World!"}
@@ -21,11 +32,21 @@ def root():
 
 @app.get("/posts")
 def get_posts():
-    return {"data": "This is your post"}
+    return {"data": my_posts}
 
 
-@app.post("/createposts")
+@app.post("/posts")
 def create_post(new_post: Post):
-    print(dict(new_post))
-    print(new_post.model_dump(mode='json'))
-    return {"data": "new_post"}
+    post_dict = dict(new_post)
+    post_dict['id'] = randrange(0, 100)
+    my_posts.append(post_dict)
+    return {"data": post_dict}
+
+
+@app.get("/posts/{id}")
+def get_post(id: int, response: Response):
+    post = find_post(id)
+    if not post:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return {'message': f"post with id:{id} was not found"}
+    return {'test': post}
